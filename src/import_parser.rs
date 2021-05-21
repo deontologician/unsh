@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, Result};
 use multi::separated_list1;
 use nom::{
     self,
@@ -7,8 +7,8 @@ use nom::{
     character::complete::{self, char, multispace0},
     combinator::{map, value},
     error::{ParseError, VerboseError},
-    multi::{self, many1},
-    sequence::{delimited, pair, preceded, separated_pair},
+    multi::{self},
+    sequence::{delimited, separated_pair},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
