@@ -6,10 +6,10 @@ use rustyline::Editor;
 use std::{collections::HashMap, io, process::Command};
 mod import_parser;
 fn main() {
-    println!("unsh v1.0");
-    for (varname, _val) in std::env::vars() {
-        std::env::remove_var(varname);
-    }
+    println!("unsh v0.1.0");
+
+    // init_env(); TODO: enable curdir & env var clearing later
+
     let mut unsh = Unsh::new();
     loop {
         if let Err(exit_msg) = unsh.readline_loop() {
@@ -17,6 +17,17 @@ fn main() {
             break;
         }
     }
+}
+
+/// Clear the current directory and environment variables
+fn init_env() {
+    for (varname, _val) in std::env::vars() {
+        std::env::remove_var(varname);
+    }
+    let working_dir = std::env::temp_dir().join(format!("unsh-{}", std::process::id()));
+    std::fs::create_dir(&working_dir).expect("Expected to be create the directory");
+    std::env::set_current_dir(&working_dir).expect("Couldn't set current working directory");
+    std::fs::remove_dir(&working_dir).expect("Couldnt remove directory");
 }
 
 #[derive(Debug)]
@@ -34,10 +45,6 @@ struct Unsh {
 
 impl Unsh {
     fn new() -> Self {
-        let working_dir = std::env::temp_dir().join(format!("unsh-{}", std::process::id()));
-        std::fs::create_dir(&working_dir).expect("Expected to be create the directory");
-        std::env::set_current_dir(&working_dir).expect("Couldn't set current working directory");
-        std::fs::remove_dir(&working_dir).expect("Couldnt remove directory");
         Self {
             rl: Editor::<()>::new(),
             commands: HashMap::new(),
@@ -82,7 +89,7 @@ impl Unsh {
                     Err(e) => match e.kind() {
                         io::ErrorKind::NotFound => {
                             anyhow::bail!(
-                                "Couldn't find the program. Did you import it with `use`?"
+                                "Couldn't find the program. Did you import it with `:use`?"
                             )
                         }
                         _ => {
